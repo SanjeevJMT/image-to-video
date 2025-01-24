@@ -2,9 +2,10 @@ import os
 import torch
 from PIL import Image
 import numpy as np
-from diffusers import StableDiffusionImg2ImgPipeline, DDIMScheduler
+from diffusers import *
 from moviepy.editor import ImageSequenceClip
 import cv2
+import requests
 import psutil
 import GPUtil
 
@@ -133,12 +134,30 @@ class ImageToVideo:
         # Clear memory after video creation
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-
+    def create_image(self, prompts ):
+        width=1080
+        height=1920
+        model='flux' 
+        seed=None
+        url = f"https://image.pollinations.ai/prompt/{prompts}?width={width}&height={height}&model={model}&seed={seed}"
+        response = requests.get(url)
+        filepath= "input/image.jpg"
+        with open(filepath, 'wb') as file:
+            file.write(response.content)
+            print(f"created using POllinationAI: {filepath}")
+    def preprocess_image(self, image_path):
+        """Load and preprocess the image"""
+        image = Image.open(image_path).convert("RGB")
+        # You may need to resize or apply other transformations here
+        return image
 if __name__ == "__main__":
     # Example usage
     converter = ImageToVideo()
+    converter.create_image(
+        prompts= "Krishna smiling and glowing "
+    )
     converter.create_video(
         image_path="input/image.jpg",
-        prompt="input/prompt.txt",
+        prompt="krishna turned into vishnu",
         output_path="output/video_out.mp4"
     )    
